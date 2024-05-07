@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 void print_wellcome()
 {
@@ -37,7 +38,7 @@ void get_dozens_quantity(int *dozens_quantity)
   printf("Digite a quantidade de dezenas que deseja apostar, o valor deve ser entre 6 e 15: ");
   scanf("%d", dozens_quantity);
 
-  if (*dozens_quantity < 6 || *dozens_quantity > 15)
+  if ((*dozens_quantity < 6 || *dozens_quantity > 15))
   {
     printf("A quantidade de dezenas deve ser entre 6 e 15\n");
     get_dozens_quantity(dozens_quantity);
@@ -60,7 +61,8 @@ void get_manual_bets(int manual_bets_quantity, int *manual_bets)
 {
   for (int i = 0; i < manual_bets_quantity; i++)
   {
-    printf("Digite a aposta %d (6 dezenas distintas): ", i + 1);
+    bool has_repeated = false;
+    printf("Digite a aposta %d (6 dezenas distintas, divididas por ENTER): ", i + 1);
     for (int j = 0; j < 6; j++)
     {
       scanf("%d", &manual_bets[j]);
@@ -69,6 +71,26 @@ void get_manual_bets(int manual_bets_quantity, int *manual_bets)
         printf("A dezena deve ser entre 1 e 60\n");
         j--;
       }
+    }
+
+    for (int j = 0; j < 6; j++)
+    {
+      for (int k = j + 1; k < 6; k++)
+      {
+        if (manual_bets[j] == manual_bets[k])
+        {
+          has_repeated = true;
+          break;
+        }
+      }
+      if (has_repeated)
+        break;
+    }
+
+    if (has_repeated)
+    {
+      printf("Não pode haver dezenas repetidas na aposta\n");
+      i--;
     }
   }
 }
