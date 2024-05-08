@@ -4,7 +4,7 @@
 
 int main()
 {
-  int dozens_quantity, manual_bets_quantity, surprises_quantity;
+  int dozens_quantity, manual_bets_quantity, surprises_quantity, stubborny_quantity;
 
   print_wellcome();
   get_start();
@@ -15,6 +15,8 @@ int main()
   get_manual_bets(manual_bets_quantity, dozens_quantity, &manual_bets);
 
   get_surprises_quantity(&surprises_quantity);
+
+  get_stubborny_quantity(&stubborny_quantity);
 
   return 0;
 }

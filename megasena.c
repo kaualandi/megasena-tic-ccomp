@@ -135,3 +135,36 @@ void get_surprises_quantity(int *surprises_quantity)
   printf("Você não digitou uma opção válida, digite somente S ou N\n");
   get_surprises_quantity(surprises_quantity);
 }
+
+void get_stubborny_quantity(int *stubborny_quantity)
+{
+  printf("Quer jogar Teimosinhas? (S/N): ");
+  char answer;
+  scanf(" %c", &answer);
+
+  if (answer == 'S' || answer == 's')
+  {
+    printf("Quantas Teimosinhas quer jogar? O valor deve ser 2 ou 8: ");
+    scanf("%d", stubborny_quantity);
+
+    if (*stubborny_quantity != 0 && *stubborny_quantity != 2 && *stubborny_quantity != 8)
+    {
+      printf("A quantidade de Teimosinhas deve ser 0, 2 ou 8\n");
+      get_stubborny_quantity(stubborny_quantity);
+      return;
+    }
+
+    printf("Perfeito, suas Teimosinhas foram registradas\n\n");
+    return;
+  }
+
+  if (answer == 'N' || answer == 'n')
+  {
+    *stubborny_quantity = 0;
+    printf("Então ta bom, sem Teimosinhas\n\n");
+    return;
+  }
+
+  printf("Você não digitou uma opção válida, digite somente S ou N\n");
+  get_stubborny_quantity(stubborny_quantity);
+}
