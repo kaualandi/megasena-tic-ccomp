@@ -35,7 +35,7 @@ void get_start()
 
 void get_dozens_quantity(int *dozens_quantity)
 {
-  printf("Digite a quantidade de dezenas que deseja apostar, o valor deve ser entre 6 e 15: ");
+  printf("Quantas dezenas você quer apostar? O valor deve ser entre 6 e 15: ");
   scanf("%d", dozens_quantity);
 
   if ((*dozens_quantity < 6 || *dozens_quantity > 15))
@@ -47,7 +47,7 @@ void get_dozens_quantity(int *dozens_quantity)
 
 void get_manual_bets_quantity(int *manual_bets_quantity)
 {
-  printf("Digite a quantidade de apostas manuais que deseja fazer, o valor deve ser entre 0 e 3: ");
+  printf("Qual a quantidade de apostas manuais quer fazer? O valor deve ser entre 0 e 3: ");
   scanf("%d", manual_bets_quantity);
 
   if (*manual_bets_quantity < 0 || *manual_bets_quantity > 3)
@@ -57,13 +57,19 @@ void get_manual_bets_quantity(int *manual_bets_quantity)
   }
 }
 
-void get_manual_bets(int manual_bets_quantity, int *manual_bets)
+void get_manual_bets(int manual_bets_quantity, int dozens_quantity, int *manual_bets)
 {
+  if (manual_bets_quantity == 0)
+  {
+    printf("Então ta bom, sem apostas manuais, todas automáticas\n\n");
+    return;
+  }
+
   for (int i = 0; i < manual_bets_quantity; i++)
   {
     bool has_repeated = false;
-    printf("Digite a aposta %d (6 dezenas distintas, divididas por ENTER): ", i + 1);
-    for (int j = 0; j < 6; j++)
+    printf("Digite a aposta %d (%d dezenas distintas, divididas por ENTER): ", i + 1, dozens_quantity);
+    for (int j = 0; j < dozens_quantity; j++)
     {
       scanf("%d", &manual_bets[j]);
       if (manual_bets[j] < 1 || manual_bets[j] > 60)
@@ -73,7 +79,7 @@ void get_manual_bets(int manual_bets_quantity, int *manual_bets)
       }
     }
 
-    for (int j = 0; j < 6; j++)
+    for (int j = 0; j < dozens_quantity; j++)
     {
       for (int k = j + 1; k < 6; k++)
       {
@@ -93,4 +99,39 @@ void get_manual_bets(int manual_bets_quantity, int *manual_bets)
       i--;
     }
   }
+
+  printf("Perfeito, suas apostas manuais foram registradas\n\n");
+}
+
+void get_surprises_quantity(int *surprises_quantity)
+{
+  printf("Quer jogar Surpresinhas? (S/N): ");
+  char answer;
+  scanf(" %c", &answer);
+
+  if (answer == 'S' || answer == 's')
+  {
+    printf("Quantas Surpresinhas quer jogar? O valor deve ser entre 1 e 7: ");
+    scanf("%d", surprises_quantity);
+
+    if (*surprises_quantity < 1 || *surprises_quantity > 7)
+    {
+      printf("A quantidade de Surpresinhas deve ser entre 1 e 7\n");
+      get_surprises_quantity(surprises_quantity);
+      return;
+    }
+
+    printf("Perfeito, suas Surpresinhas foram registradas\n\n");
+    return;
+  }
+
+  if (answer == 'N' || answer == 'n')
+  {
+    *surprises_quantity = 0;
+    printf("Então ta bom, sem Surpresinhas\n\n");
+    return;
+  }
+
+  printf("Você não digitou uma opção válida, digite somente S ou N\n");
+  get_surprises_quantity(surprises_quantity);
 }
