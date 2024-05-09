@@ -9,9 +9,40 @@
 // 3. Em seguida, o programa realizará o concurso ao sortear 6 dezenas distintas e pertencentes ao intervalo [01, 60]. Após, o programa deverá exibir as dezenas sorteadas do Concurso N (onde N =1 caso QT = 0 ou 1 <= N <= QT) e, logo em seguida, cada aposta do apostador (Manuais + Surpresinhas). Para cada aposta exibida, deve ser exibido logo abaixo a quantidade de acertos em relação ao sorteio do concurso;
 // 4. Caso o apostador tenha definido QT > 0, a Etapa 3 será repetida QT vezes. Ao final (independente do valor de QT), o programa deve exibir as apostas premiadas juntamente com o subtotal do prêmio. Por fim, o programa deve exibir ao usuário o valor total de todos os prêmios, juntamente com o valor da aposta para efeitos comparativos. Para calcular os valores dos prêmios, baseie-se nas Tabelas 2 e 3. A Tabela 3 contém as quantias monetárias ofertadas para a Quadra, Quina e Sena no Concurso 2705.
 
+// tabela de valores
+// Dezenas marcadas  Valor da aposta (R$)
+// 6                 5,00
+// 7                 35,00
+// 8                 140,00
+// 9                 420,00
+// 10                1.050,00
+// 11                2.310,00
+// 12                4.620,00
+// 13                8.580,00
+// 14                15.015,00
+// 15                25.025,00
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+
+typedef struct
+{
+  int dozens;
+  float price;
+} PriceDozens;
+
+PriceDozens price_dozens[] = {
+    {6, 5.00},
+    {7, 35.00},
+    {8, 140.00},
+    {9, 420.00},
+    {10, 1050.00},
+    {11, 2310.00},
+    {12, 4620.00},
+    {13, 8580.00},
+    {14, 15015.00},
+    {15, 25025.00}};
 
 void print_wellcome()
 {
@@ -167,4 +198,13 @@ void get_stubborny_quantity(int *stubborny_quantity)
 
   printf("Você não digitou uma opção válida, digite somente S ou N\n");
   get_stubborny_quantity(stubborny_quantity);
+}
+
+void calc_price(int dozens_quantity, int manual_bets_quantity, int surprises_quantity, int stubborny_quantity)
+{
+  float price = stubborny_quantity * (price_dozens[dozens_quantity - 6].price * (manual_bets_quantity + surprises_quantity));
+
+  char price_brl;
+
+  printf("O valor total das apostas é de R$ %.2f\n", price);
 }
