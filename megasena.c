@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <locale.h>
 
 typedef struct
 {
@@ -88,7 +89,17 @@ void get_manual_bets_quantity(int *manual_bets_quantity)
   }
 }
 
-void get_manual_bets(int manual_bets_quantity, int dozens_quantity, int *manual_bets)
+int **allocate_manual_bets(int manual_bets_quantity, int dozens_quantity)
+{
+  int **manual_bets = (int **)malloc(manual_bets_quantity * sizeof(int *));
+  for (int i = 0; i < manual_bets_quantity; i++)
+  {
+    manual_bets[i] = (int *)malloc(dozens_quantity * sizeof(int));
+  }
+  return manual_bets;
+}
+
+void get_manual_bets(int manual_bets_quantity, int dozens_quantity, int **manual_bets)
 {
   if (manual_bets_quantity == 0)
   {
@@ -102,8 +113,8 @@ void get_manual_bets(int manual_bets_quantity, int dozens_quantity, int *manual_
     printf("Digite a aposta %d (%d dezenas distintas, divididas por ENTER): ", i + 1, dozens_quantity);
     for (int j = 0; j < dozens_quantity; j++)
     {
-      scanf("%d", &manual_bets[j]);
-      if (manual_bets[j] < 1 || manual_bets[j] > 60)
+      scanf("%d", &manual_bets[i][j]);
+      if (manual_bets[i][j] < 1 || manual_bets[i][j] > 60)
       {
         printf("A dezena deve ser entre 1 e 60\n");
         j--;
@@ -112,9 +123,9 @@ void get_manual_bets(int manual_bets_quantity, int dozens_quantity, int *manual_
 
     for (int j = 0; j < dozens_quantity; j++)
     {
-      for (int k = j + 1; k < 6; k++)
+      for (int k = j + 1; k < dozens_quantity; k++)
       {
-        if (manual_bets[j] == manual_bets[k])
+        if (manual_bets[i][j] == manual_bets[i][k])
         {
           has_repeated = true;
           break;
@@ -180,7 +191,7 @@ void get_stubborny_quantity(int *stubborny_quantity)
 
     if (*stubborny_quantity != 0 && *stubborny_quantity != 2 && *stubborny_quantity != 8)
     {
-      printf("A quantidade de Teimosinhas deve ser 0, 2 ou 8\n");
+      printf("A quantidade de Teimosinhas deve ser 1, 2 ou 8\n");
       get_stubborny_quantity(stubborny_quantity);
       return;
     }
@@ -191,13 +202,112 @@ void get_stubborny_quantity(int *stubborny_quantity)
 
   if (answer == 'N' || answer == 'n')
   {
-    *stubborny_quantity = 0;
+    *stubborny_quantity = 1;
     printf("Então ta bom, sem Teimosinhas\n\n");
     return;
   }
 
   printf("Você não digitou uma opção válida, digite somente S ou N\n");
   get_stubborny_quantity(stubborny_quantity);
+}
+
+void generate_random_bet(int dozens_quantity, int *random_bets)
+{
+  bool has_repeated = false;
+  for (int j = 0; j < dozens_quantity; j++)
+  {
+    random_bets[j] = rand() % 60 + 1;
+  }
+
+  for (int j = 0; j < dozens_quantity; j++)
+  {
+    for (int k = j + 1; k < dozens_quantity; k++)
+    {
+      if (random_bets[j] == random_bets[k])
+      {
+        has_repeated = true;
+        break;
+      }
+    }
+    if (has_repeated)
+      break;
+  }
+
+  if (has_repeated)
+  {
+    generate_random_bet(dozens_quantity, random_bets);
+  }
+}
+
+void generate_surprises_bets(int surprises_quantity, int dozens_quantity, int **random_bets)
+{
+  for (int i = 0; i < surprises_quantity; i++)
+  {
+    generate_random_bet(dozens_quantity, random_bets[i]);
+  }
+}
+
+int **allocate_memory(int surprises_quantity, int dozens_quantity)
+{
+  int **random_bets = malloc(surprises_quantity * sizeof(int *));
+  for (int i = 0; i < surprises_quantity; i++)
+  {
+    random_bets[i] = malloc(dozens_quantity * sizeof(int));
+  }
+  return random_bets;
+}
+
+void free_memory(int **bets, int surprises_quantity)
+{
+  for (int i = 0; i < surprises_quantity; i++)
+  {
+    free(bets[i]);
+  }
+  free(bets);
+}
+
+void print_bets(int dozens_quantity, int **manual_bets, int **random_bets, int manual_bets_quantity, int surprises_quantity)
+{
+  printf("Vamos revisar suas apostas...\n");
+  if (manual_bets_quantity == 0)
+  {
+    printf("Você não fez apostas manuais\n");
+  }
+  else
+  {
+    printf("Apostas manuais:\n");
+  }
+
+  for (int i = 0; i < manual_bets_quantity; i++)
+  {
+    printf("Aposta %d: ", i + 1);
+    for (int j = 0; j < dozens_quantity; j++)
+    {
+      printf("%d ", manual_bets[i][j]);
+    }
+    printf("\n");
+  }
+
+  printf("\n");
+
+  if (surprises_quantity == 0)
+  {
+    printf("Você não fez Surpresinhas\n");
+  }
+  else
+  {
+    printf("Surpresinhas:\n");
+  }
+  for (int i = 0; i < surprises_quantity; i++)
+  {
+    printf("Surpresinha %d: ", i + 1);
+    for (int j = 0; j < dozens_quantity; j++)
+    {
+      printf("%d ", random_bets[i][j]);
+    }
+    printf("\n");
+  }
+  printf("\n");
 }
 
 void calc_price(int dozens_quantity, int manual_bets_quantity, int surprises_quantity, int stubborny_quantity)
@@ -207,4 +317,100 @@ void calc_price(int dozens_quantity, int manual_bets_quantity, int surprises_qua
   char price_brl;
 
   printf("O valor total das apostas é de R$ %.2f\n", price);
+}
+
+int confirm_price()
+{
+  printf("Tudo certo, podemos prosseguir com a aposta? (S/N): ");
+  char answer;
+  scanf(" %c", &answer);
+
+  if (answer == 'S' || answer == 's')
+  {
+    printf("Perfeito, vamos ao sorteio\n\n");
+    return 1;
+  }
+
+  if (answer == 'N' || answer == 'n')
+  {
+    printf("Vamos ficar por aqui então, espero te ver em breve!\n");
+    return 0;
+  }
+
+  printf("Você não digitou uma opção válida, digite somente S ou N\n");
+  confirm_price();
+  return 0;
+}
+
+int win_type(int hits)
+{
+  if (hits == 6)
+  {
+    printf("Parabéns, você ganhou a Sena!\n");
+    return 1;
+  }
+  if (hits == 5)
+  {
+    printf("Parabéns, você ganhou a Quina!\n");
+    return 2;
+  }
+  if (hits == 4)
+  {
+    printf("Parabéns, você ganhou a Quadra!\n");
+    return 3;
+  }
+  return 0;
+}
+
+void generate_competitions(int stubborny_quantity, int dozens_quantity, int manual_bets_quantity, int surprises_quantity, int **manual_bets, int **random_bets)
+{
+  for (int i = 0; i < stubborny_quantity; i++)
+  {
+    printf("Concurso 000%d\n", i + 1);
+    printf("Dezenas sorteadas: ");
+    int *sorted_dozens = malloc(6 * sizeof(int));
+    generate_random_bet(6, sorted_dozens);
+
+    for (int j = 0; j < 6; j++)
+    {
+      printf("%d ", sorted_dozens[j]);
+    }
+    printf("\n");
+
+    for (int j = 0; j < manual_bets_quantity; j++)
+    {
+      int hits = 0;
+      for (int k = 0; k < dozens_quantity; k++)
+      {
+        for (int l = 0; l < 6; l++)
+        {
+          if (manual_bets[j][k] == sorted_dozens[l])
+          {
+            hits++;
+          }
+        }
+      }
+      printf("Aposta manual %d: %d/6 acertos\n", j + 1, hits);
+      win_type(hits);
+    }
+
+    for (int j = 0; j < surprises_quantity; j++)
+    {
+      int hits = 0;
+      for (int k = 0; k < dozens_quantity; k++)
+      {
+        for (int l = 0; l < 6; l++)
+        {
+          if (random_bets[j][k] == sorted_dozens[l])
+          {
+            hits++;
+          }
+        }
+      }
+      printf("Surpresinha %d: %d/6 acertos\n", j + 1, hits);
+      win_type(hits);
+    }
+
+    free(sorted_dozens);
+  }
 }
