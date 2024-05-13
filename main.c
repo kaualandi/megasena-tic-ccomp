@@ -8,6 +8,7 @@ int main()
   setlocale(LC_ALL, "pt_BR.UTF-8");
 
   int dozens_quantity, manual_bets_quantity, surprises_quantity, stubborny_quantity;
+  float total_price, total_prize;
 
   print_wellcome();
   get_start();
@@ -27,7 +28,7 @@ int main()
 
   print_bets(dozens_quantity, manual_bets, random_bets, manual_bets_quantity, surprises_quantity);
 
-  calc_price(dozens_quantity, manual_bets_quantity, surprises_quantity, stubborny_quantity);
+  total_price = calc_price(dozens_quantity, manual_bets_quantity, surprises_quantity, stubborny_quantity);
 
   if (confirm_price() == 0)
   {
@@ -36,7 +37,9 @@ int main()
     return 0;
   }
 
-  generate_competitions(stubborny_quantity, dozens_quantity, manual_bets_quantity, surprises_quantity, manual_bets, random_bets);
+  total_prize = generate_competitions(stubborny_quantity, dozens_quantity, manual_bets_quantity, surprises_quantity, manual_bets, random_bets);
+
+  show_total_values(total_price, total_prize);
 
   free_memory(manual_bets, manual_bets_quantity);
   free_memory(random_bets, surprises_quantity);

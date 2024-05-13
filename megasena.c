@@ -45,6 +45,10 @@ PriceDozens price_dozens[] = {
     {14, 15015.00},
     {15, 25025.00}};
 
+#define QUADRA_VALUE 834.93
+#define QUINA_VALUE 32797.02
+#define SENA_VALUE 118265926.76
+
 void print_wellcome()
 {
   printf(" __  __                                  ____\n");
@@ -310,13 +314,11 @@ void print_bets(int dozens_quantity, int **manual_bets, int **random_bets, int m
   printf("\n");
 }
 
-void calc_price(int dozens_quantity, int manual_bets_quantity, int surprises_quantity, int stubborny_quantity)
+int calc_price(int dozens_quantity, int manual_bets_quantity, int surprises_quantity, int stubborny_quantity)
 {
   float price = stubborny_quantity * (price_dozens[dozens_quantity - 6].price * (manual_bets_quantity + surprises_quantity));
-
-  char price_brl;
-
   printf("O valor total das apostas é de R$ %.2f\n", price);
+  return price;
 }
 
 int confirm_price()
@@ -347,29 +349,88 @@ int win_type(int hits)
   if (hits == 6)
   {
     printf("Parabéns, você ganhou a Sena!\n");
-    return 1;
+    return 6;
   }
   if (hits == 5)
   {
     printf("Parabéns, você ganhou a Quina!\n");
-    return 2;
+    return 5;
   }
   if (hits == 4)
   {
     printf("Parabéns, você ganhou a Quadra!\n");
-    return 3;
+    return 4;
   }
   return 0;
 }
 
-void generate_competitions(int stubborny_quantity, int dozens_quantity, int manual_bets_quantity, int surprises_quantity, int **manual_bets, int **random_bets)
+void value_4_hits(int dozens_quantity, int *prize_qtd)
 {
+  int quadra_values[10] = {1, 3, 6, 10, 15, 21, 28, 36, 45, 55};
+  prize_qtd[0] = quadra_values[dozens_quantity - 6];
+  prize_qtd[1] = 0;
+  prize_qtd[2] = 0;
+}
+
+void value_5_hits(int dozens_quantity, int *prize_qtd)
+{
+  int quadra_values[10] = {0, 5, 15, 30, 50, 75, 105, 140, 180, 225};
+  int quina_values[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+  prize_qtd[0] = quadra_values[dozens_quantity - 6];
+  prize_qtd[1] = quina_values[dozens_quantity - 6];
+  prize_qtd[2] = 0;
+}
+
+void value_6_hits(int dozens_quantity, int *prize_qtd)
+{
+  int quadra_values[10] = {0, 0, 15, 45, 90, 150, 225, 315, 420, 540};
+  int quina_values[10] = {0, 6, 12, 18, 24, 30, 36, 42, 48, 54};
+  prize_qtd[0] = quadra_values[dozens_quantity - 6];
+  prize_qtd[1] = quina_values[dozens_quantity - 6];
+  prize_qtd[2] = 1;
+}
+
+float value_hit_prize(int dozens_quantity, int hits)
+{
+  int prize_qtd[3];
+  if (hits == 4)
+  {
+    value_4_hits(dozens_quantity, prize_qtd);
+  }
+
+  if (hits == 5)
+  {
+    value_5_hits(dozens_quantity, prize_qtd);
+  }
+
+  if (hits == 6)
+  {
+    value_6_hits(dozens_quantity, prize_qtd);
+  }
+
+  if (hits == 4 || hits == 5 || hits == 6)
+  {
+    float quadra_value = prize_qtd[0] * QUADRA_VALUE;
+    float quina_value = prize_qtd[1] * QUINA_VALUE;
+    float sena_value = prize_qtd[2] * SENA_VALUE;
+
+    return quadra_value + quina_value + sena_value;
+  }
+  return 0;
+}
+
+int generate_competitions(int stubborny_quantity, int dozens_quantity, int manual_bets_quantity, int surprises_quantity, int **manual_bets, int **random_bets)
+{
+  float total_prize = 0;
+
   for (int i = 0; i < stubborny_quantity; i++)
   {
-    printf("Concurso 000%d\n", i + 1);
+    printf("========== Concurso 000%d ==========\n", i + 1);
     printf("Dezenas sorteadas: ");
     int *sorted_dozens = malloc(6 * sizeof(int));
     generate_random_bet(6, sorted_dozens);
+    int total_hits = 0;
+    float prize = 0;
 
     for (int j = 0; j < 6; j++)
     {
@@ -386,12 +447,13 @@ void generate_competitions(int stubborny_quantity, int dozens_quantity, int manu
         {
           if (manual_bets[j][k] == sorted_dozens[l])
           {
-            hits++;
+            if (hits >= 4)
+              hits++;
           }
         }
       }
       printf("Aposta manual %d: %d/6 acertos\n", j + 1, hits);
-      win_type(hits);
+      total_hits += win_type(hits);
     }
 
     for (int j = 0; j < surprises_quantity; j++)
@@ -408,9 +470,31 @@ void generate_competitions(int stubborny_quantity, int dozens_quantity, int manu
         }
       }
       printf("Surpresinha %d: %d/6 acertos\n", j + 1, hits);
-      win_type(hits);
+      total_hits += win_type(hits);
     }
 
+    prize = value_hit_prize(dozens_quantity, total_hits);
+    total_prize += prize;
+    printf("\nSub-total do premio: R$ %.2f\n", prize);
+
     free(sorted_dozens);
+    printf("\n");
   }
+
+  return total_prize;
+}
+
+void show_total_values(float total_price, float total_prize)
+{
+  printf("O valor total dos prêmios foi de R$ %.2f\n\n", total_prize);
+
+  float liquid_value = total_prize - total_price;
+  if (liquid_value < 0)
+  {
+    printf("Infelizmente você teve um prejuízo de R$ %.2f\n", liquid_value * -1);
+    return;
+  }
+
+  printf("Restando um valor líquido de R$ %.2f\n", liquid_value);
+  printf("\nObrigado por jogar!");
 }
