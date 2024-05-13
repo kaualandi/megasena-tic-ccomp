@@ -1,5 +1,7 @@
 #!/bin/zsh
 
+clear
+
 echo "Compilando o programa...\n"
 
 # Compilação dos arquivos fonte
